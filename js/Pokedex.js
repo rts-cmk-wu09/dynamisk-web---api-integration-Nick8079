@@ -1,66 +1,70 @@
-const pokedexElement = document.getElementById("pokedex");
+const searchInput = document.getElementById("searchInput");
+      const searchButton = document.getElementById("searchButton");
+      const pokemonList = document.getElementById("pokemonList");
 
-let results = [];
+      // Function to fetch a list of Pokemon from PokeAPI
+      const fetchPokemon = async () => {
+        const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=151");
+        const data = await response.json();
+        return data.results;
+      };
 
-const limit = 20
-let offset = 0
+      // Function to fetch a specific Pokemon from PokeAPI
+      const fetchPokemonByName = async (name) => {
+        const response = await fetch(
+          `https://pokeapi.co/api/v2/pokemon/${name}`
+        );
+        const data = await response.json();
+        return data;
+      };
 
-function getIDFromPokemon(pokemon) {
+      // Function to display a list of Pokemon in the UI
+      const displayPokemonList = (pokemon) => {
+        pokemonList.innerHTML = "";
+        pokemon.forEach((p) => {
+          const li = document.createElement("li");
+          const img = document.createElement("img");
 
-    return pokemon.url.replace(
-        "https://pokeapi.co/api/v2/pokemon/",
-        ""
-        ).replace("/", "");
-        
-    }
+          img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-viii/icons/${p.url.split("/")[6]}.png`;
+          img.alt = p.name;
 
+          li.appendChild(img);
+          li.innerText += p.name;
+          pokemonList.appendChild(li);
+        });
+      };
 
+      // Function to display a specific Pokemon in the UI
+      const displayPokemon = (pokemon) => {
+        pokemonList.innerHTML = "";
+        const li = document.createElement("li");
+        const img = document.createElement("img");
+        const name = document.createElement("h2");
+        const types = document.createElement("ul");
 
+        img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-viii/icons/${pokemon.id}.png`;
+        img.alt = pokemon.name;
 
+        name.innerText = pokemon.name;
 
-function createImageCol(pokemon) {
-    const id = getIDFromPokemon(pokemon)
+        pokemon.types.forEach((t) => {
+          const type = document.createElement("li");
+          type.innerText = t.type.name;
+          types.appendChild(type);
+        });
 
-    const imageCol = document.createElement("div");
-    imageCol.classList.add("col");
+        li.appendChild(img);
+        li.appendChild(name);
+        li.appendChild(types);
+        pokemonList.appendChild(li);
+      };
 
-    const imgElement = document.createElement("img");
-    let url = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png'
-    imgElement.src = url;
-    imgElement.height = 100;
-    imgElement.width = 100;
+      // Event listener for search button
+      searchButton.addEventListener("click", async () => {
+        const name = searchInput.value.toLowerCase();
+        const pokemon = await fetchPokemonByName(name);
+        displayPokemon(pokemon);
+      });
 
-    imageCol.appendChild(imgElement);
-    return imageCol;
-}
-
-function drawUI() {
-    results.forEach((pokemon) => {
-        const container = document.createElement("div");
-        container.classList.add("row");
-
-        const imageCol = createImageCol(pokemon)
-        const nameCol = document.createElement("div");
-        nameCol.classList.add("col");
-        const nameElement = document.createElement("p");
-        nameElement.innerText = pokemon["name"];
-
-        nameCol.append(nameElement);
-        container.appendChild(nameCol);
-        container.appendChild(imageCol);
-        pokedexElement.appendChild(container)
-    });
-}
-
-fetch("https://pokeapi.co/api/v2/pokemon")
-    .then((response) => {
-        return response.json();
-    })
-    .then((json) => {
-        console.log(json);
-        results = json["results"];
-        drawUI()
-    })
-    .catch((error) => {
-        console.log(error);
-    })
+      // Initial display of all Pokemon
+      fetchPokemon().then(displayPokemonList);
