@@ -1,10 +1,16 @@
-body{
+body {
     background-color: #6885a2;
-}
 
-.logo{
-margin-left: 40%;
-height: 30px;
 
 }
 
+ul{
+    list-style: none;
+}
+
+
+
+img{
+    height: 100px;
+    width: 100px;
+}
